@@ -49,12 +49,14 @@ class _ClockInScreenState extends State<ClockInScreen> {
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
-    setState(() {
-      latitude = position.latitude;
-      longitude = position.longitude;
-      strLatLong = 'Latitude: $latitude, Longitude: $longitude';
-    });
-    await getAddressFromLongLat(position);
+    if (mounted) {
+      setState(() {
+        latitude = position.latitude;
+        longitude = position.longitude;
+        strLatLong = 'Latitude: $latitude, Longitude: $longitude';
+      });
+      await getAddressFromLongLat(position);
+    }
   }
 
   Future<void> getAddressFromLongLat(Position position) async {
@@ -62,9 +64,11 @@ class _ClockInScreenState extends State<ClockInScreen> {
         await placemarkFromCoordinates(position.latitude, position.longitude);
 
     Placemark place = placemarks[0];
-    setState(() {
-      strAlamat = '${place.street}, ${place.subLocality}, ${place.locality}';
-    });
+    if (mounted) {
+      setState(() {
+        strAlamat = '${place.street}, ${place.subLocality}, ${place.locality}';
+      });
+    }
   }
 
   Future<void> _submitClockIn() async {
@@ -167,7 +171,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
             children: [
               TileLayer(
                 urlTemplate:
-                    'https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/106.6623,-6.2237,17.33,0/300x200?access_token=pk.eyJ1IjoiZmFqYXJhbnRvbm8wMSIsImEiOiJjbTNwaTkwdTEwZWg5MmxwczV4bmVyenV0In0.fFaoyAdp2ZqO3s-lgzFaXw',
+                    'https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/106.6623,-6.2237,15.33,0/1200x1200?access_token=pk.eyJ1IjoiZmFqYXJhbnRvbm8wMSIsImEiOiJjbTNwaTkwdTEwZWg5MmxwczV4bmVyenV0In0.fFaoyAdp2ZqO3s-lgzFaXw',
                 // additionalOptions: {
                 //   'accessToken':
                 //       'pk.eyJ1IjoiZmFqYXJhbnRvbm8wMSIsImEiOiJjbTNwaWoydHUwZDh5MmtzOGNwN20zb2tiIn0.CcGM68jpRTuRoK9NhW83Qw',
@@ -190,6 +194,20 @@ class _ClockInScreenState extends State<ClockInScreen> {
               //     // Also add images...
               //   ],
               // ),
+
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point: LatLng(-6.2240383, 106.662275),
+                    width: 80,
+                    height: 80,
+                    child: Icon(
+                      Icons.location_on_rounded,
+                      color: Colors.red,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
           Image.asset("assets/icon/shadow.png"),

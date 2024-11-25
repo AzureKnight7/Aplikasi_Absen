@@ -25,6 +25,9 @@ class _ClockOutScreenState extends State<ClockOutScreen> {
 
   @override
   void initState() {
+    // map.MapboxOptions.setAccessToken(
+    //   'pk.eyJ1IjoiZmFqYXJhbnRvbm8wMSIsImEiOiJjbTNwaWoydHUwZDh5MmtzOGNwN20zb2tiIn0.CcGM68jpRTuRoK9NhW83Qw',
+    // );
     super.initState();
   }
 
@@ -148,16 +151,27 @@ class _ClockOutScreenState extends State<ClockOutScreen> {
     return Scaffold(
       body: Stack(
         children: [
+          // map.MapWidget(
+          //   key: ValueKey("mapWidget"),
+          //   cameraOptions: map.CameraOptions(
+          //     center: map.Point(
+          //       coordinates: map.Position(-6.2240383, 106.662275),
+          //     ),
+          //     zoom: 12.0,
+          //   ),
+          // ),
           FlutterMap(
             options: MapOptions(
-              initialCenter:
-                  LatLng(-6.2240383, 106.662275), // Center the map over London
+              initialCenter: LatLng(
+                -6.2240383,
+                106.662275,
+              ), // Center the map over London
               initialZoom: 9.2,
             ),
             children: [
               TileLayer(
                 urlTemplate:
-                    'https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/106.6623,-6.2237,17.33,0/300x200?access_token=pk.eyJ1IjoiZmFqYXJhbnRvbm8wMSIsImEiOiJjbTNwaTkwdTEwZWg5MmxwczV4bmVyenV0In0.fFaoyAdp2ZqO3s-lgzFaXw',
+                    'https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/106.6623,-6.2237,13.33,0/300x200?access_token=pk.eyJ1IjoiZmFqYXJhbnRvbm8wMSIsImEiOiJjbTNwaTkwdTEwZWg5MmxwczV4bmVyenV0In0.fFaoyAdp2ZqO3s-lgzFaXw',
                 // additionalOptions: {
                 //   'accessToken':
                 //       'pk.eyJ1IjoiZmFqYXJhbnRvbm8wMSIsImEiOiJjbTNwaWoydHUwZDh5MmtzOGNwN20zb2tiIn0.CcGM68jpRTuRoK9NhW83Qw',
@@ -165,12 +179,6 @@ class _ClockOutScreenState extends State<ClockOutScreen> {
                 // },
                 // Plenty of other options available!
               ),
-              // TileLayer( // Display map tiles from any source
-
-              //   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', // OSMF's Tile Server
-              //   userAgentPackageName: 'com.example.app',
-              //   // And many more recommended properties!
-              // ),
               // RichAttributionWidget( // Include a stylish prebuilt attribution widget that meets all requirments
               //   attributions: [
               //     TextSourceAttribution(
@@ -180,8 +188,23 @@ class _ClockOutScreenState extends State<ClockOutScreen> {
               //     // Also add images...
               //   ],
               // ),
+
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point: LatLng(-6.2240383, 106.662275),
+                    width: 180,
+                    height: 180,
+                    child: Icon(
+                      Icons.location_on_rounded,
+                      color: Colors.red,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
+
           Image.asset("assets/icon/shadow.png"),
           Column(
             mainAxisAlignment: MainAxisAlignment.end,
