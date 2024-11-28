@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:new_attandance/src/presentation/auth/widget/q_dialog_error.dart';
 import 'package:new_attandance/src/presentation/home/bloc/location/location_cubit.dart';
 import 'package:new_attandance/src/presentation/home/bloc/user_status/user_status_cubit.dart';
+import 'package:new_attandance/src/presentation/home/screen/attendance_history.dart';
 import 'package:new_attandance/src/presentation/home/screen/clock_in_screen.dart';
 import 'package:new_attandance/src/presentation/home/screen/clock_out_screen.dart';
 import 'package:new_attandance/src/presentation/home/screen/q_absen.dart';
@@ -114,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<List<AbsenceData>> fetchAttendanceHistory() async {
+   Future<List<AbsenceData>> fetchAttendanceHistory() async {
     const String apiUrl = "https://hris-api.alfanium.id/v1/presence";
     const String token =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1Yzk3YWE2OC02YWE0LTRjNGEtOWExNi1kMTVhNjJiZmMyODMiLCJpYXQiOjE3MzE5MDA1ODR9.qAgb_VpIvd-iwHnZW_o3ZoF6O2XD1jCe6Wh-wIZdFoE";
@@ -573,11 +574,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                       )
                                     ],
                                   ),
-                                  Text(
-                                    "See All",
-                                    style: TextStyle(
-                                        color: Color(0xff4266B9),
-                                        fontWeight: FontWeight.w500),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.of(context)
+                                          .push(MaterialPageRoute(
+                                        builder: (context) =>
+                                            AttendanceHistory(),
+                                      ));
+                                    },
+                                    child: Text(
+                                      "See All",
+                                      style: TextStyle(
+                                          color: Color(0xff4266B9),
+                                          fontWeight: FontWeight.w500),
+                                    ),
                                   )
                                 ],
                               ),

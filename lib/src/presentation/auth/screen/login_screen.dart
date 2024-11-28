@@ -12,6 +12,7 @@ import 'package:new_attandance/src/presentation/auth/widget/q_head_logo.dart';
 import 'package:new_attandance/src/presentation/auth/widget/q_textfield_login.dart';
 import 'package:new_attandance/src/presentation/home/screen/home_screen.dart';
 import 'package:new_attandance/src/shared/bloc/theme/theme_cubit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../shared/function/q_function.dart';
 import '../bloc/auth/auth_bloc.dart';
@@ -27,6 +28,37 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
+  bool isRememberMeChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberedCredentials();
+  }
+
+  Future<void> _loadRememberedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isRememberMeChecked = prefs.getBool('remember_me') ?? false;
+      if (isRememberMeChecked) {
+        email.text = prefs.getString('email') ?? '';
+        password.text = prefs.getString('password') ?? '';
+      }
+    });
+  }
+
+  Future<void> _saveCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (isRememberMeChecked) {
+      await prefs.setBool('remember_me', true);
+      await prefs.setString('email', email.text);
+      await prefs.setString('password', password.text);
+    } else {
+      await prefs.setBool('remember_me', false);
+      await prefs.remove('email');
+      await prefs.remove('password');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +71,6 @@ class _LoginScreenState extends State<LoginScreen> {
       listener: (context, state) {
         state.maybeWhen(
           orElse: () {},
-          
           authenticate: (name, email, profile) => Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -159,23 +190,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             Row(
                               children: [
                                 Checkbox(
-                                  value: false,
-                                  onChanged: (Value) {},
-                                  fillColor:
-                                      WidgetStateProperty.resolveWith((states) {
-                                    if (!states
-                                        .contains(WidgetState.selected)) {
-                                      return Color(0xffE8E8E9);
-                                    }
-                                    return Colors.red;
-                                  }),
-                                  side: BorderSide(
-                                      width: 0.5, color: Color(0xffE8E8E9)),
+                                  value: isRememberMeChecked,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      isRememberMeChecked = value!;
+                                    });
+                                  },
                                 ),
-                                Text("Remember me"),
+                                const Text("Remember me"),
                               ],
                             ),
-                            Text(
+                            const Text(
                               "Forget Password?",
                               style: TextStyle(
                                   fontSize: 16.0,
@@ -196,13 +221,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               return QButtonAuth(
                                 h: h,
                                 title: "Login",
-                                onPress: () {
+                                onPress: () async {
                                   if (email.text.isEmpty &&
                                       password.text.isEmpty) {
                                     dialogError(context,
-                                        "Email dan password tidak boleh kosong");
+                                        "Email and password must not be empty");
                                   } else {
-                                    print("login gagal");
+                                    await _saveCredentials();
                                     auth.add(AuthEvent.login(
                                         email: email.text,
                                         password: password.text));

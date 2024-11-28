@@ -151,60 +151,56 @@ class _ClockOutScreenState extends State<ClockOutScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // map.MapWidget(
-          //   key: ValueKey("mapWidget"),
-          //   cameraOptions: map.CameraOptions(
-          //     center: map.Point(
-          //       coordinates: map.Position(-6.2240383, 106.662275),
-          //     ),
-          //     zoom: 12.0,
-          //   ),
-          // ),
-          FlutterMap(
-            options: MapOptions(
-              initialCenter: LatLng(
-                -6.2240383,
-                106.662275,
-              ), // Center the map over London
-              initialZoom: 9.2,
-            ),
-            children: [
-              TileLayer(
-                urlTemplate:
-                    'https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/106.6623,-6.2237,13.33,0/300x200?access_token=pk.eyJ1IjoiZmFqYXJhbnRvbm8wMSIsImEiOiJjbTNwaTkwdTEwZWg5MmxwczV4bmVyenV0In0.fFaoyAdp2ZqO3s-lgzFaXw',
-                // additionalOptions: {
-                //   'accessToken':
-                //       'pk.eyJ1IjoiZmFqYXJhbnRvbm8wMSIsImEiOiJjbTNwaWoydHUwZDh5MmtzOGNwN20zb2tiIn0.CcGM68jpRTuRoK9NhW83Qw',
-                //   'id': 'mapbox.mapbox-streets-v8',
-                // },
-                // Plenty of other options available!
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 200,
+            child: FlutterMap(
+              options: MapOptions(
+                initialCenter: LatLng(
+                  -6.2240383,
+                  106.662275,
+                ), // Center the map over London
+                initialZoom: 13,
               ),
-              // RichAttributionWidget( // Include a stylish prebuilt attribution widget that meets all requirments
-              //   attributions: [
-              //     TextSourceAttribution(
-              //       'OpenStreetMap contributors',
-              //       onTap: () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')), // (external)
-              //     ),
-              //     // Also add images...
-              //   ],
-              // ),
+              children: [
+                TileLayer(
+                  urlTemplate:
+                      'https://api.mapbox.com/styles/v1/fajarantono01/cm3piu8ae000e01sd1zpc9a6l/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZmFqYXJhbnRvbm8wMSIsImEiOiJjbTNwaTkwdTEwZWg5MmxwczV4bmVyenV0In0.fFaoyAdp2ZqO3s-lgzFaXw',
+                  additionalOptions: {
+                    'accessToken':
+                        'pk.eyJ1IjoiZmFqYXJhbnRvbm8wMSIsImEiOiJjbTNwaTkwdTEwZWg5MmxwczV4bmVyenV0In0.fFaoyAdp2ZqO3s-lgzFaXw',
+                    'id': 'mapbox.satellite',
+                  },
+                  // Plenty of other options available!
+                ),
+                // RichAttributionWidget( // Include a stylish prebuilt attribution widget that meets all requirments
+                //   attributions: [
+                //     TextSourceAttribution(
+                //       'OpenStreetMap contributors',
+                //       onTap: () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')), // (external)
+                //     ),
+                //     // Also add images...
+                //   ],
+                // ),
 
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    point: LatLng(-6.2240383, 106.662275),
-                    width: 180,
-                    height: 180,
-                    child: Icon(
-                      Icons.location_on_rounded,
-                      color: Colors.red,
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: LatLng(-6.2240383, 106.662275),
+                      width: 180,
+                      height: 180,
+                      child: Icon(
+                        Icons.location_on_rounded,
+                        color: Colors.red,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
-
           Image.asset("assets/icon/shadow.png"),
           Column(
             mainAxisAlignment: MainAxisAlignment.end,
