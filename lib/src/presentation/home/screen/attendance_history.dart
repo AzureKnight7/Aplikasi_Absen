@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -16,9 +15,13 @@ class AttendanceHistory extends StatefulWidget {
 class _AttendanceHistoryState extends State<AttendanceHistory> {
   bool isLoading = true;
   List<AbsenceData> absenceData = [];
-  Future<void> fetchAttendanceHistory() async {
+  DateTime? startDate;
+  DateTime? endDate;
+
+  Future<void> fetchAttendanceHistory({DateTime? start, DateTime? end}) async {
     isLoading = true;
     setState(() {});
+
     const String apiUrl = "https://hris-api.alfanium.id/v1/presence";
     const String token =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1Yzk3YWE2OC02YWE0LTRjNGEtOWExNi1kMTVhNjJiZmMyODMiLCJpYXQiOjE3MzE5MDA1ODR9.qAgb_VpIvd-iwHnZW_o3ZoF6O2XD1jCe6Wh-wIZdFoE";
@@ -37,7 +40,17 @@ class _AttendanceHistoryState extends State<AttendanceHistory> {
 
         if (data['success'] == true) {
           final results = data['results'] as List;
-          var present = results.map((item) {
+          var filteredResults = results.where((item) {
+            final createdAt = DateTime.parse(item['createdAt']);
+            if (start != null && end != null) {
+              return createdAt
+                      .isAfter(start.subtract(const Duration(days: 1))) &&
+                  createdAt.isBefore(end.add(const Duration(days: 1)));
+            }
+            return true;
+          });
+
+          var present = filteredResults.map((item) {
             final clockIn = item['clockIn'];
             final clockOut = item['clockOut'];
             final clockInStatus = item['clockInStatus'] ?? "Unknown";
@@ -53,24 +66,19 @@ class _AttendanceHistoryState extends State<AttendanceHistory> {
             );
           }).toList();
 
-          isLoading = false;
-          setState(() {});
           absenceData = present;
         } else {
-          isLoading = false;
-          setState(() {});
           throw Exception("API response success is false");
         }
       } else {
-        isLoading = false;
-        setState(() {});
         throw Exception(
             "Failed to fetch attendance history: ${response.statusCode}");
       }
     } catch (error) {
+      print("Error fetching attendance history: $error");
+    } finally {
       isLoading = false;
       setState(() {});
-      print("Error fetching attendance history: $error");
     }
   }
 
@@ -80,81 +88,196 @@ class _AttendanceHistoryState extends State<AttendanceHistory> {
     super.initState();
   }
 
+  Future<void> pickDateRange() async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        startDate = picked.start;
+        endDate = picked.end;
+      });
+      await fetchAttendanceHistory(start: startDate, end: endDate);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
         automaticallyImplyLeading: false,
-        title: GestureDetector(
-          onTap: () {
-            Navigator.of(context).pop();
-          },
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(50),
-              color: const Color(0xff537FE7),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(50),
+                  color: const Color(0xff537FE7),
+                ),
+                child: SvgPicture.asset(
+                  "assets/icon/circle_left.svg",
+                ),
+              ),
             ),
-            child: SvgPicture.asset(
-              "assets/icon/circle_left.svg",
+            const SizedBox(width: 10),
+            const Text(
+              "Attendance History",
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-          ),
+          ],
         ),
       ),
       body: Container(
         color: Colors.white,
-        child: isLoading
-            ? Center(
-                child: CircularProgressIndicator(),
-              )
-            : ListView.builder(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 35, horizontal: 20),
-                itemCount: absenceData.length,
-                itemBuilder: (context, index) {
-                  var item = absenceData[index];
-                  return Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            item.abscenceDate,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: GestureDetector(
+                      onTap: pickDateRange,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              startDate != null
+                                  ? DateFormat('yyyy/MM/dd').format(startDate!)
+                                  : "Start Date",
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            const Icon(Icons.calendar_today,
+                                size: 18, color: Colors.grey),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: GestureDetector(
+                      onTap: pickDateRange,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              endDate != null
+                                  ? DateFormat('yyyy/MM/dd').format(endDate!)
+                                  : "End Date",
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            const Icon(Icons.calendar_today,
+                                size: 18, color: Colors.grey),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  GestureDetector(
+                    onTap: () {
+                      fetchAttendanceHistory(start: startDate, end: endDate);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xff537FE7),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: const Icon(Icons.search, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : absenceData.isEmpty
+                      ? const Center(
+                          child: Text(
+                            "No data found for the selected date range.",
                             style: TextStyle(
-                              color: Color(0xff5D5D65),
-                              fontSize: 12,
+                              fontSize: 16,
+                              color: Colors.grey,
                             ),
                           ),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.schedule,
-                                color: item.isLate
-                                    ? Color(0xfff45050)
-                                    : Color(0xff5d5d65),
-                              ),
-                              SizedBox(
-                                width: 5,
-                              ),
-                              Text(
-                                item.abscenceTime,
-                                style: TextStyle(
-                                  color: item.isLate
-                                      ? Color(0xfff45050)
-                                      : Color(0xff5d5d65),
-                                  fontSize: 12,
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 35, horizontal: 20),
+                          itemCount: absenceData.length,
+                          itemBuilder: (context, index) {
+                            var item = absenceData[index];
+                            return Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      item.abscenceDate,
+                                      style: const TextStyle(
+                                        color: Color(0xff5D5D65),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.schedule,
+                                          color: item.isLate
+                                              ? const Color(0xfff45050)
+                                              : const Color(0xff5d5d65),
+                                        ),
+                                        const SizedBox(width: 5),
+                                        Text(
+                                          item.abscenceTime,
+                                          style: TextStyle(
+                                            color: item.isLate
+                                                ? const Color(0xfff45050)
+                                                : const Color(0xff5d5d65),
+                                            fontSize: 12,
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                              )
-                            ],
-                          ),
-                        ],
-                      ),
-                      Divider()
-                    ],
-                  );
-                },
-              ),
+                                const Divider()
+                              ],
+                            );
+                          },
+                        ),
+            ),
+          ],
+        ),
       ),
     );
   }

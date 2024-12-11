@@ -51,7 +51,7 @@ class _QTextfieldAuthState extends State<QTextfieldAuth> {
             height: 5.0,
           ),
           TextFormField(
-            style: TextStyle(),
+            style: TextStyle(fontSize: 16.0, color: Color(0xff5D5D65)),
             controller: widget.controller,
             initialValue: null,
             obscureText: hide!,
